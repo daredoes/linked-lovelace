@@ -1,0 +1,705 @@
+[
+    {
+        "id": "9c4487c4bd26cf90",
+        "type": "tab",
+        "label": "Hassio Dynamic UI",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "668fefeada1f2db0",
+        "type": "server-state-changed",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "server": "b70ef59f.f6b758",
+        "version": 4,
+        "exposeToHomeAssistant": false,
+        "haConfig": [
+            {
+                "property": "name",
+                "value": ""
+            },
+            {
+                "property": "icon",
+                "value": ""
+            }
+        ],
+        "entityidfilter": "input_button.update_ui",
+        "entityidfiltertype": "exact",
+        "outputinitially": false,
+        "state_type": "str",
+        "haltifstate": "",
+        "halt_if_type": "str",
+        "halt_if_compare": "is",
+        "outputs": 1,
+        "output_only_on_state_change": true,
+        "for": "0",
+        "forType": "num",
+        "forUnits": "minutes",
+        "ignorePrevStateNull": false,
+        "ignorePrevStateUnknown": false,
+        "ignorePrevStateUnavailable": false,
+        "ignoreCurrentStateUnknown": false,
+        "ignoreCurrentStateUnavailable": false,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "entityState"
+            },
+            {
+                "property": "data",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "triggerId"
+            }
+        ],
+        "x": 1070,
+        "y": 240,
+        "wires": [
+            [
+                "3934673507a97ed1"
+            ]
+        ]
+    },
+    {
+        "id": "23114955e712738f",
+        "type": "ha-api",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "server": "b70ef59f.f6b758",
+        "version": 1,
+        "debugenabled": false,
+        "protocol": "websocket",
+        "method": "get",
+        "path": "",
+        "data": "{ \t    \"type\": \"lovelace/dashboards/list\"\t}",
+        "dataType": "jsonata",
+        "responseType": "json",
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "results"
+            }
+        ],
+        "x": 250,
+        "y": 180,
+        "wires": [
+            [
+                "e216a43e63e33bfa"
+            ]
+        ]
+    },
+    {
+        "id": "e216a43e63e33bfa",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Get each possible item path",
+        "func": "const urls = []\nmsg.payload.forEach((item) => urls.push(item.url_path))\nmsg.payload = urls\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 220,
+        "wires": [
+            [
+                "7153a0b06707ff3a"
+            ]
+        ]
+    },
+    {
+        "id": "7153a0b06707ff3a",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "For Each URL, create new message",
+        "func": "msg.payload.forEach((url, i) => {\n    const newMsg = Object.assign({}, msg, {\n        payload: url,\n        topic: url,\n        \n    })\n    if (i == msg.payload.length-1) {\n        newMsg.complete = true;\n    }\n    node.send(newMsg)\n})",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 260,
+        "wires": [
+            [
+                "b72f851bc6e99031"
+            ]
+        ]
+    },
+    {
+        "id": "b72f851bc6e99031",
+        "type": "ha-api",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "server": "b70ef59f.f6b758",
+        "version": 1,
+        "debugenabled": false,
+        "protocol": "websocket",
+        "method": "get",
+        "path": "",
+        "data": "{ \t    \"type\": \"lovelace/config\",\t    \"url_path\": payload\t}",
+        "dataType": "jsonata",
+        "responseType": "json",
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "results"
+            }
+        ],
+        "x": 250,
+        "y": 300,
+        "wires": [
+            [
+                "2cc58eb2029e35b8"
+            ]
+        ]
+    },
+    {
+        "id": "2cc58eb2029e35b8",
+        "type": "join",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "num",
+        "reduceFixup": "",
+        "x": 370,
+        "y": 300,
+        "wires": [
+            [
+                "3a275bed40b75b76"
+            ]
+        ]
+    },
+    {
+        "id": "3a275bed40b75b76",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Set globals for views and templates",
+        "func": "Object.keys(msg.payload).forEach((key) => {\n    const data = msg.payload[key]\n    global.set(key, data, 'hassio_views')\n    const isTemplate = data.template\n    if (isTemplate) {\n        data.views.forEach((view) => {\n            if (view.path && view.cards.length == 1) {\n                const card = view.cards[0];\n                global.set(view.path, card, 'hassio_templates')\n            }\n        })\n    }\n})\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 340,
+        "wires": [
+            [
+                "c62cb15d4ed2cd60"
+            ]
+        ]
+    },
+    {
+        "id": "6538d2cb74f49cfd",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Send Views from Global as Msgs",
+        "func": "msg.payload = {}\nconst storeName = 'hassio_views'\nglobal.keys(storeName).forEach((key) => {\n    msg.topic = key;\n    node.send(Object.assign({}, msg, { payload: global.get(key, storeName)}));\n})",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 440,
+        "wires": [
+            [
+                "4f07d396b1048584"
+            ]
+        ]
+    },
+    {
+        "id": "4a12c7644dd24779",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Get Templates from Global",
+        "func": "msg.payload = {}\nconst storeName = 'hassio_templates'\nglobal.keys(storeName).forEach((key) => {\n    msg.payload[key] = global.get(key, storeName)\n})\nmsg.templates = msg.payload\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 560,
+        "wires": [
+            [
+                "ae73a52323b2acca"
+            ]
+        ]
+    },
+    {
+        "id": "ae73a52323b2acca",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Send off message for each template",
+        "func": "msg.payload = {}\nconst storeName = 'hassio_templates'\nconst length = global.keys(storeName).length-1\nglobal.keys(storeName).forEach((key, i) => {\n    msg.topic = key;\n    if (i == length) {\n        msg.complete = true;\n    }\n    node.send(Object.assign({}, msg, { payload: global.get(key, storeName)}));\n})",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 600,
+        "wires": [
+            [
+                "ec51b4dbbede045f"
+            ]
+        ]
+    },
+    {
+        "id": "a931a5174d717c43",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Set template globals",
+        "func": "global.set(msg.topic, msg.payload, 'hassio_templates')\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 680,
+        "wires": [
+            [
+                "e6229d8b291bf159"
+            ]
+        ]
+    },
+    {
+        "id": "43222bbec4cf9d53",
+        "type": "link in",
+        "z": "9c4487c4bd26cf90",
+        "name": "Get Rendered Templates",
+        "links": [],
+        "x": 165,
+        "y": 560,
+        "wires": [
+            [
+                "4a12c7644dd24779"
+            ]
+        ]
+    },
+    {
+        "id": "f59070e7a70217be",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Update Template: Top-Level Config",
+        "func": "const updateTemplate = (data, templateData) => {\n    // Check if data is top-level config, or card config\n    if (data.views && data.views.length) {\n        const views = []\n        // Iterate through each view in top-level config\n        data.views.forEach((view) => {\n            const cards = []\n            if (view.cards) {\n                // For every card in the config, store a copy of the rendered card\n                view.cards.forEach((card) => {\n                    cards.push(Object.assign({}, updateTemplate(card, templateData)))\n                })\n                // Replace the cards in the view\n                view.cards = cards\n            }\n            views.push(Object.assign({}, view))\n        })\n        // Replace the views in the config\n        data.views = views\n        return data;\n    } else {\n        // Get key and data for template\n        const templateKey = data.template\n        const dataFromTemplate = data.template_data || {}\n        if (templateKey && templateData[templateKey]) {\n            if (dataFromTemplate) {\n                // If data in template, find and replace each key\n                let template = JSON.stringify(templateData[templateKey])\n                Object.keys(dataFromTemplate).forEach((key) => {\n                    template = template.replace(`\\$${key}\\$`, dataFromTemplate[key])\n                })\n                try {\n                    // Convert rendered string back to JSON\n                    data = JSON.parse(template)\n                } catch (e) {\n                    console.error(e)\n                    // Return original value if parse fails\n                    data = templateData[templateKey]\n                }\n                // Put template data back in card\n                data.template_data = dataFromTemplate\n            } else {\n                // Put template value as new value\n                data = templateData[templateKey]\n            }\n            // Put template key back in card\n            data.template = templateKey\n        }\n        if (data.cards) {\n            // Update any cards in the card\n            const cards = []\n            data.cards.forEach((card) => {\n                cards.push(Object.assign({}, updateTemplate(card, templateData)))\n            })\n            data.cards = cards\n        }\n        return data;\n    }\n}\nmsg.payload = updateTemplate(msg.payload, msg.templates)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "const updateTemplate = (data, templateData) => {\n    // Check if data is top-level config, or card config\n    if (data.views && data.views.length) {\n        const views = []\n        // Iterate through each view in top-level config\n        data.views.forEach((view) => {\n            const cards = []\n            if (view.cards) {\n                // For every card in the config, store a copy of the rendered card\n                view.cards.forEach((card) => {\n                    cards.push(Object.assign({}, updateTemplate(card, templateData)))\n                })\n                // Replace the cards in the view\n                view.cards = cards\n            }\n            views.push(Object.assign({}, view))\n        })\n        // Replace the views in the config\n        data.views = views\n        return data;\n    } else {\n        // Get key and data for template\n        const templateKey = data.template\n        const dataFromTemplate = data.template_data || {}\n        if (templateKey && templateData[templateKey]) {\n            if (dataFromTemplate) {\n                // If data in template, find and replace each key\n                let template = JSON.stringify(templateData[templateKey])\n                Object.keys(dataFromTemplate).forEach((key) => {\n                    template = template.replace(`\\$${key}\\$`, dataFromTemplate[key])\n                })\n                try {\n                    // Convert rendered string back to JSON\n                    data = JSON.parse(template)\n                } catch (e) {\n                    console.error(e)\n                    // Return original value if parse fails\n                    data = templateData[templateKey]\n                }\n                // Put template data back in card\n                data.template_data = dataFromTemplate\n            } else {\n                // Put template value as new value\n                data = templateData[templateKey]\n            }\n            // Put template key back in card\n            data.template = templateKey\n        }\n        if (data.cards) {\n            // Update any cards in the card\n            const cards = []\n            data.cards.forEach((card) => {\n                cards.push(Object.assign({}, updateTemplate(card, templateData)))\n            })\n            data.cards = cards\n        }\n        return data;\n    }\n}\n\n",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 80,
+        "wires": [
+            [
+                "415ace097ee71b2b"
+            ]
+        ]
+    },
+    {
+        "id": "381e01cce2454d11",
+        "type": "link in",
+        "z": "9c4487c4bd26cf90",
+        "name": "Update Template",
+        "links": [],
+        "x": 165,
+        "y": 80,
+        "wires": [
+            [
+                "f59070e7a70217be"
+            ]
+        ]
+    },
+    {
+        "id": "415ace097ee71b2b",
+        "type": "link out",
+        "z": "9c4487c4bd26cf90",
+        "name": "link out 1",
+        "mode": "return",
+        "links": [],
+        "x": 545,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "ec51b4dbbede045f",
+        "type": "link call",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "links": [
+            "381e01cce2454d11"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 310,
+        "y": 640,
+        "wires": [
+            [
+                "a931a5174d717c43"
+            ]
+        ]
+    },
+    {
+        "id": "4f07d396b1048584",
+        "type": "link call",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "links": [
+            "381e01cce2454d11"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 290,
+        "y": 480,
+        "wires": [
+            [
+                "e71aa699e8338c3d"
+            ]
+        ]
+    },
+    {
+        "id": "5b60efe8445c5e4b",
+        "type": "link out",
+        "z": "9c4487c4bd26cf90",
+        "name": "link out 2",
+        "mode": "return",
+        "links": [],
+        "x": 615,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "e6229d8b291bf159",
+        "type": "join",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "num",
+        "reduceFixup": "",
+        "x": 270,
+        "y": 720,
+        "wires": [
+            [
+                "740548ec4b20a3a6"
+            ]
+        ]
+    },
+    {
+        "id": "740548ec4b20a3a6",
+        "type": "function",
+        "z": "9c4487c4bd26cf90",
+        "name": "Get Templates from Global",
+        "func": "msg.payload = {}\nconst storeName = 'hassio_templates'\nglobal.keys(storeName).forEach((key) => {\n    msg.payload[key] = global.get(key, storeName)\n})\nmsg.templates = msg.payload\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 720,
+        "wires": [
+            [
+                "5b60efe8445c5e4b"
+            ]
+        ]
+    },
+    {
+        "id": "195d2bcd7f41175c",
+        "type": "link call",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "links": [
+            "43222bbec4cf9d53"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 310,
+        "y": 400,
+        "wires": [
+            [
+                "6538d2cb74f49cfd"
+            ]
+        ]
+    },
+    {
+        "id": "4bcebb05ed52f51c",
+        "type": "link in",
+        "z": "9c4487c4bd26cf90",
+        "name": "Get Each Rendered View",
+        "links": [],
+        "x": 165,
+        "y": 400,
+        "wires": [
+            [
+                "195d2bcd7f41175c"
+            ]
+        ]
+    },
+    {
+        "id": "e71aa699e8338c3d",
+        "type": "link out",
+        "z": "9c4487c4bd26cf90",
+        "name": "link out 3",
+        "mode": "return",
+        "links": [],
+        "x": 415,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "fd66baec84e9b889",
+        "type": "link in",
+        "z": "9c4487c4bd26cf90",
+        "name": "Set Templates and Views to Global",
+        "links": [],
+        "x": 165,
+        "y": 180,
+        "wires": [
+            [
+                "23114955e712738f"
+            ]
+        ]
+    },
+    {
+        "id": "c62cb15d4ed2cd60",
+        "type": "link out",
+        "z": "9c4487c4bd26cf90",
+        "name": "link out 4",
+        "mode": "return",
+        "links": [],
+        "x": 515,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "f03d8d0a059624ba",
+        "type": "inject",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 1130,
+        "y": 320,
+        "wires": [
+            [
+                "3934673507a97ed1"
+            ]
+        ]
+    },
+    {
+        "id": "3934673507a97ed1",
+        "type": "link call",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "links": [
+            "fd66baec84e9b889"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 1400,
+        "y": 300,
+        "wires": [
+            [
+                "94857fdbe180512e"
+            ]
+        ]
+    },
+    {
+        "id": "94857fdbe180512e",
+        "type": "link call",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "links": [
+            "4bcebb05ed52f51c"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 1370,
+        "y": 340,
+        "wires": [
+            [
+                "f0e9174f4a6837a6"
+            ]
+        ]
+    },
+    {
+        "id": "3c579559be6699c7",
+        "type": "ha-api",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "server": "b70ef59f.f6b758",
+        "version": 1,
+        "debugenabled": false,
+        "protocol": "websocket",
+        "method": "get",
+        "path": "",
+        "data": "{ \t    \"type\": \"lovelace/config/save\",\t    \"config\": payload,\t    \"url_path\": topic\t}",
+        "dataType": "jsonata",
+        "responseType": "json",
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "results"
+            }
+        ],
+        "x": 250,
+        "y": 800,
+        "wires": [
+            [
+                "d8309624924e8d14"
+            ]
+        ]
+    },
+    {
+        "id": "5a85301754eb078d",
+        "type": "link in",
+        "z": "9c4487c4bd26cf90",
+        "name": "Update Lovelace Configs with Payload and Topic",
+        "links": [],
+        "x": 165,
+        "y": 800,
+        "wires": [
+            [
+                "3c579559be6699c7"
+            ]
+        ]
+    },
+    {
+        "id": "d8309624924e8d14",
+        "type": "link out",
+        "z": "9c4487c4bd26cf90",
+        "name": "link out 5",
+        "mode": "return",
+        "links": [],
+        "x": 335,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "f0e9174f4a6837a6",
+        "type": "link call",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "links": [
+            "5a85301754eb078d"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 1450,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "38c03431e129fc7c",
+        "type": "server-events",
+        "z": "9c4487c4bd26cf90",
+        "name": "",
+        "server": "b70ef59f.f6b758",
+        "version": 1,
+        "event_type": "update_ui",
+        "exposeToHomeAssistant": false,
+        "haConfig": [
+            {
+                "property": "name",
+                "value": ""
+            },
+            {
+                "property": "icon",
+                "value": ""
+            }
+        ],
+        "waitForRunning": true,
+        "outputProperties": [
+            {
+                "property": "payload",
+                "propertyType": "msg",
+                "value": "",
+                "valueType": "eventData"
+            },
+            {
+                "property": "topic",
+                "propertyType": "msg",
+                "value": "$outputData(\"eventData\").event_type",
+                "valueType": "jsonata"
+            }
+        ],
+        "x": 1090,
+        "y": 280,
+        "wires": [
+            [
+                "3934673507a97ed1"
+            ]
+        ]
+    },
+    {
+        "id": "b70ef59f.f6b758",
+        "type": "server",
+        "name": "Home Assistant",
+        "version": 2,
+        "addon": false,
+        "rejectUnauthorizedCerts": true,
+        "ha_boolean": "y|yes|true|on|home|open",
+        "connectionDelay": true,
+        "cacheJson": true,
+        "heartbeat": false,
+        "heartbeatInterval": "30"
+    }
+]
