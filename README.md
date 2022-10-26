@@ -1,5 +1,7 @@
 # Linked Lovelace Cards
 
+![Linked Lovelace Demo](/docs/imgs/LinkedLoveLace.gif)
+
 ## Setup
 
 1. Install Node Red & Hassio
