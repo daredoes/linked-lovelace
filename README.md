@@ -5,7 +5,7 @@
 ## Setup
 
 1. Install Node Red & Hassio
-2. Modify Node Red to have two context stores called `hassio_views` and `hassio_templates`
+2. [Modify Node Red](https://nodered.org/docs/user-guide/context#using-multiple-context-stores) to have two context stores called `hassio_views` and `hassio_templates`
 3. Create a button called `Update UI` as a helper in Hassio
 4. Import Flow
 5. Profit!!
