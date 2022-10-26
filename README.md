@@ -20,11 +20,17 @@ The first thing needed when creating a template card is a dashboard to hold thes
 
 Create a dashboard inside of Hassio at `http://YOUR_INSTANCE.local:8123/config/lovelace/dashboards`
 
-> For our example, we'll create a `Templates` dashboard with the path `lovelace-templates`. The settings here don't really matter, it only matters that we have a dashboard.
+![Add New Dashboard](/docs/imgs/LovelaceDashboards.png)
+
+For our example, we'll create a `Templates` dashboard with the path `lovelace-templates`. The settings here don't really matter, it only matters that we have a dashboard.
+
+![Add Template Dashboard](/docs/imgs/AddNewDashboard.png)
 
 1. On the `Templates` dashboard, click the `⋮` to access a menu, and click `Edit Dashboard`.
-2. Once again, click the `⋮` to access another menu, and click `Raw configuration editor`.
+![Edit Dashboard](/docs/imgs/EditDashboard.png)
+2. Once again, click the `⋮` to access another menu, and click `Raw configuration editor`. ![Edit Dashboard Header](/docs/imgs/RawConfigurationEditorMenu.png)
 3. Add `template: true` to the top of the configuration file
+![Configuration](/docs/imgs/Configuration.png)
 
 That's it! Any view in this dashboard that has exactly one card in it will now be converted into a template.
 
@@ -97,6 +103,8 @@ cards:
     template: version-card
 ```
 
+![Broken Template Card](/docs/imgs/BrokenTemplate.png)
+
 Wait, that doesn't look like a very useful card. Maybe it'll be more useful once we render it. Save the card, and then click it! You may be prompted to refresh the page, if not, refresh anyways since the changes won't appear until we do.
 
 Click edit, and look that that filled in YAML.
@@ -139,6 +147,8 @@ cards:
       version: v0.0.1
     template: version-card
 ```
+
+![Working Template Card](/docs/imgs/WorkingTemplate.png)
 
 The main takeaway here is where `template_data`, `version`, and `$version$` are used.
 
